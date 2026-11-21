@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package command;
+
+enum ArticleCategory {
+  BURGER = 0;
+  MENU = 1;
+  SIDE = 2;
+  DRINK = 3;
+  DESSERT = 4;
+  SAUCE = 5;
+}
+
+service CommandService {
+  rpc CreateArticle (CreateArticleRequest) returns (ArticleResponse);
+  rpc FindArticleById (FindArticleByIdRequest) returns (ArticleResponse);
+  rpc FindArticlesKiosk (FindArticlesKioskRequest) returns (ArticleListResponse);
+  rpc FindArticlesByCategory (FindArticlesByCategoryRequest) returns (ArticleListResponse);
+  rpc UpdateArticleAvailability (UpdateArticleAvailabilityRequest) returns (ArticleResponse);
+  rpc RemoveArticle (RemoveArticleRequest) returns (RemoveArticleResponse);
+}
+
+message CreateArticleRequest {
+  string name = 1;
+  double price = 2;
+  optional ArticleCategory category = 3;
+  optional string description = 4;
+  optional string imageUrl = 5;
+  optional bool isAvailable = 6;
+  repeated string allergens = 7;
+}
+
+message FindArticleByIdRequest {
+  string id = 1;
+}
+
+message FindArticlesKioskRequest {
+  optional bool onlyAvailable = 1;
+}
+
+message FindArticlesByCategoryRequest {
+  ArticleCategory category = 1;
+}
+
+message UpdateArticleAvailabilityRequest {
+  string id = 1;
+  bool isAvailable = 2;
+}
+
+message RemoveArticleRequest {
+  string id = 1;
+}
+
+message ArticleResponse {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  ArticleCategory category = 4;
+  double price = 5;
+  optional string imageUrl = 6;
+  bool isAvailable = 7;
+  repeated string allergens = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+}
+
+message ArticleListResponse {
+  repeated ArticleResponse articles = 1;
+}
+
+message RemoveArticleResponse {
+  bool deleted = 1;
+}

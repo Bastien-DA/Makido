@@ -1,0 +1,47 @@
+services:
+  ms-command:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ms-command
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=command_db
+      - DB_USER=command_user
+      - DB_PASSWORD=command_password
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - ms-command-net
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:19
+    container_name: ms-command-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=command_db
+      - POSTGRES_USER=command_user
+      - POSTGRES_PASSWORD=command_password
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U command_user -d command_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ms-command-net
+    restart: unless-stopped
+
+networks:
+  ms-command-net:
+    driver: bridge
+
+volumes:
+  pgdata:

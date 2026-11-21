@@ -1,0 +1,11 @@
+{
+  "extends": "@makido/tsconfig/nest.json",
+  "compilerOptions": {
+    "resolvePackageJsonExports": true,
+    "allowSyntheticDefaultImports": true,
+    "outDir": "./dist",
+    "rootDir": ".",
+    "incremental": true,
+    "strictPropertyInitialization": false,
+  }
+}

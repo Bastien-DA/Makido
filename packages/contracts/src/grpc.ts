@@ -1,4 +1,4 @@
-import { type status } from '@grpc/grpc-js';
+import { type status, Metadata } from '@grpc/grpc-js';
 import {
   type GrpcOptions,
   RpcException,
@@ -6,7 +6,7 @@ import {
 } from '@nestjs/microservices';
 import { fileURLToPath } from 'node:url';
 
-export type GrpcPackage = 'payment';
+export type GrpcPackage = 'command' | 'payment';
 
 const PROTO_DIR = fileURLToPath(new URL('../proto/', import.meta.url));
 
@@ -28,6 +28,7 @@ export function grpcOptions(pkg: GrpcPackage, url: string): GrpcOptions {
   };
 }
 
+/** A gRPC error, with its status code, that the gateway turns into an HTTP error */
 export function rpcError(code: status, message: string): RpcException {
   return new RpcException({ code, message });
 }
