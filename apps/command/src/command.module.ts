@@ -5,7 +5,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommandController } from './command.controller.js';
 import { CommandService } from './command.service.js';
 import { databaseOptions } from './database-options.js';
+import { DownstreamService } from './downstream.service.js';
 import { Article } from './entities/article.entity.js';
+import { OrderService } from './order.service.js';
 
 @Module({
   imports: [
@@ -17,12 +19,12 @@ import { Article } from './entities/article.entity.js';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         ...databaseOptions(config),
-        synchronize: true,
+        synchronize: false,
       }),
     }),
     TypeOrmModule.forFeature([Article]),
   ],
   controllers: [CommandController],
-  providers: [CommandService],
+  providers: [CommandService, OrderService, DownstreamService],
 })
 export class CommandModule {}

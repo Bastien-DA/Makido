@@ -34,7 +34,7 @@ function validateOptions(
       );
     }
 
-    const { id, name, additionalPrice } = option;
+    const { id, name, additionalPrice, incompatibleWith } = option;
     const invalidIdentity =
       !isNonEmptyString(id) || ids.has(id) || !isNonEmptyString(name);
     const invalidPrice =
@@ -50,7 +50,32 @@ function validateOptions(
 
     ids.add(id);
 
-    return { id, name, additionalPrice };
+    if (incompatibleWith === undefined) {
+      return { id, name, additionalPrice };
+    }
+
+    if (!Array.isArray(incompatibleWith)) {
+      throw rpcError(
+        status.INVALID_ARGUMENT,
+        `Incompatibilités invalides pour "${name}".`,
+      );
+    }
+    const references = incompatibleWith.map((reference) => {
+      if (
+        !isRecord(reference) ||
+        !isNonEmptyString(reference.groupId) ||
+        !isNonEmptyString(reference.optionId)
+      ) {
+        throw rpcError(
+          status.INVALID_ARGUMENT,
+          `Incompatibilité invalide pour "${name}".`,
+        );
+      }
+
+      return { groupId: reference.groupId, optionId: reference.optionId };
+    });
+
+    return { id, name, additionalPrice, incompatibleWith: references };
   });
 }
 
@@ -66,7 +91,7 @@ export function validateArticleCustomizations(
 
   const ids = new Set<string>();
 
-  return value.map((group, index) => {
+  const groups = value.map((group, index) => {
     if (!isRecord(group)) {
       throw rpcError(
         status.INVALID_ARGUMENT,
@@ -115,4 +140,27 @@ export function validateArticleCustomizations(
       options: validateOptions(options, name, maxSelections),
     };
   });
+
+  for (const group of groups) {
+    for (const option of group.options) {
+      for (const reference of option.incompatibleWith ?? []) {
+        const target = groups.find(
+          (candidate) => candidate.id === reference.groupId,
+        );
+        if (
+          !target?.options.some(
+            (candidate) => candidate.id === reference.optionId,
+          ) ||
+          (group.id === reference.groupId && option.id === reference.optionId)
+        ) {
+          throw rpcError(
+            status.INVALID_ARGUMENT,
+            `Incompatibilité inconnue pour "${option.name}".`,
+          );
+        }
+      }
+    }
+  }
+
+  return groups;
 }

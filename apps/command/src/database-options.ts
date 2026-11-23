@@ -3,6 +3,8 @@ import type { DataSourceOptions } from 'typeorm';
 import { type ConfigService } from '@nestjs/config';
 
 import { Article } from './entities/article.entity.js';
+import { OrderCounter } from './entities/order-counter.entity.js';
+import { Order } from './entities/order.entity.js';
 
 export function databaseOptions(config: ConfigService): DataSourceOptions {
   return {
@@ -12,6 +14,6 @@ export function databaseOptions(config: ConfigService): DataSourceOptions {
     username: config.get<string>('DB_USER'),
     password: config.get<string>('DB_PASSWORD'),
     database: config.get<string>('DB_NAME'),
-    entities: [Article],
+    entities: [Article, Order, OrderCounter],
   };
 }

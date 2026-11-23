@@ -7,7 +7,7 @@ import {
 } from '@nestjs/microservices';
 import { fileURLToPath } from 'node:url';
 
-export type GrpcPackage = 'command' | 'payment';
+export type GrpcPackage = 'command' | 'payment' | 'ticket';
 
 const PROTO_DIR = fileURLToPath(new URL('../proto/', import.meta.url));
 

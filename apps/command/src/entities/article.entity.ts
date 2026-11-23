@@ -19,6 +19,7 @@ export interface ArticleCustomizationOption {
   id: string;
   name: string;
   additionalPrice: number;
+  incompatibleWith?: { groupId: string; optionId: string }[];
 }
 
 export interface ArticleCustomizationGroup {
@@ -67,6 +68,9 @@ export class Article {
 
   @Column({ type: 'simple-array', nullable: true })
   allergens: null | string[];
+
+  @Column({ type: 'text', array: true, default: () => "'{}'" })
+  ingredients: string[];
 
   @Column({ type: 'jsonb', default: () => "'[]'::jsonb" })
   customizations: ArticleCustomizationGroup[];

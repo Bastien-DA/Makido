@@ -17,7 +17,39 @@ service CommandService {
   rpc GetArticles (GetArticlesRequest) returns (ArticleListResponse);
   rpc UpdateArticleAvailability (UpdateArticleAvailabilityRequest) returns (ArticleResponse);
   rpc RemoveArticle (RemoveArticleRequest) returns (RemoveArticleResponse);
+  rpc FinalizeCommand (FinalizeCommandRequest) returns (FinalizeCommandResponse);
+  rpc PaymentConfirmed (PaymentConfirmedRequest) returns (PaymentConfirmedResponse);
 }
+
+message CustomizationSelection {
+  string groupId = 1;
+  string optionId = 2;
+  uint32 quantity = 3;
+  uint32 includedQuantity = 4;
+}
+
+message CommandLine {
+  string articleId = 1;
+  uint32 quantity = 2;
+  repeated CustomizationSelection customizations = 3;
+}
+
+message FinalizeCommandRequest {
+  string idempotencyKey = 1;
+  repeated CommandLine items = 2;
+  uint64 totalCents = 3;
+}
+
+message FinalizeCommandResponse {
+  string shortReference = 1;
+}
+
+message PaymentConfirmedRequest {
+  string reference = 1;
+  string createdAtUtc = 2;
+}
+
+message PaymentConfirmedResponse {}
 
 message CreateArticleRequest {
   string name = 1;
@@ -28,6 +60,7 @@ message CreateArticleRequest {
   optional bool isAvailable = 6;
   repeated string allergens = 7;
   repeated CustomizationGroup customizations = 8;
+  repeated string ingredients = 9;
 }
 
 message FindArticleByIdRequest {
@@ -60,6 +93,7 @@ message ArticleResponse {
   string createdAt = 9;
   string updatedAt = 10;
   repeated CustomizationGroup customizations = 11;
+  repeated string ingredients = 12;
 }
 
 message CustomizationGroup {
@@ -75,6 +109,12 @@ message CustomizationOption {
   string id = 1;
   string name = 2;
   double additionalPrice = 3;
+  repeated CustomizationOptionReference incompatibleWith = 4;
+}
+
+message CustomizationOptionReference {
+  string groupId = 1;
+  string optionId = 2;
 }
 
 message ArticleListResponse {

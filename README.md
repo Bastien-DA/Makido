@@ -141,7 +141,7 @@ L'interface cuisine utilise SSE pour recevoir les évolutions de la file de comm
 **3. Génération du ticket**
 
 - Une fois la commande validée et payée, le MS Ticket intervient.
-- Il récupère les informations nécessaires auprès du MS Commande via gRPC.
+- Le MS Commande lui transmet la commande et ses ingrédients via gRPC.
 - Le ticket de caisse est généré et mis à disposition du système.
 
 **4. Préparation en cuisine**
@@ -339,10 +339,24 @@ pnpm install
 
 ### Démarrage local avec Docker Compose
 
-Le Compose racine réutilise la configuration du MS Commande et démarre ce service avec PostgreSQL (Docker Compose 2.20 ou supérieur pour `include`). Il publie le service gRPC sur le port `50051`. TypeORM crée le schéma au démarrage du service.
+Le Compose racine réutilise la configuration du MS Commande (Docker Compose 2.20 ou supérieur pour `include`). Il publie le service gRPC sur le port `50051`. Les migrations TypeORM doivent être appliquées avant le démarrage du service ; la synchronisation automatique est désactivée.
+
+Les migrations versionnées conservent l'historique du schéma : on ajoute une migration pour chaque évolution, sans modifier les anciennes. Elles sont distinctes des fixtures de données.
+
+Avant le lancement, préparer les fichiers PEM dans `apps/command/certs/` (ou définir `GRPC_CERT_DIR` pour utiliser un autre dossier) :
+
+- `command.crt` et `command.key` : certificat et clé du service, autorisés comme serveur et client TLS ;
+- `client-ca.crt` : autorités de certification des clients gRPC autorisés ;
+- `payment-ca.crt` : autorité dédiée qui signe directement le certificat client du service Paiement ;
+- `server-ca.crt` : autorités des serveurs Paiement et Ticket.
+
+Les certificats des serveurs doivent correspondre à leurs noms DNS. Les clés privées ne doivent pas être versionnées et doivent être lisibles par l'utilisateur `node` du conteneur. Définir `PAYMENT_GRPC_URL` et `TICKET_GRPC_URL` avec les adresses DNS des services correspondants ; les valeurs Compose par défaut sont des exemples, ces services ne sont pas inclus dans le Compose.
 
 ```bash
-docker compose up --build
+docker compose build ms-command
+docker compose up -d postgres
+docker compose run --rm --no-deps ms-command node apps/command/dist/migrate.js
+docker compose up -d ms-command
 ```
 
 Une fois le service démarré, charger les données de démonstration manuellement depuis un autre terminal :
@@ -351,7 +365,7 @@ Une fois le service démarré, charger les données de démonstration manuelleme
 docker compose exec -w /workspace/apps/command ms-command node dist/seed.js
 ```
 
-Cette commande est réservée au développement. Elle complète les personnalisations vides des articles existants sans modifier leurs autres champs ni remplacer des personnalisations non vides.
+Cette commande est réservée au développement. Elle complète les personnalisations et ingrédients vides des articles existants sans écraser les valeurs non vides. Les ingrédients des données de démonstration sont indicatifs et doivent être validés avant un usage réel.
 
 Le mot de passe PostgreSQL par défaut (`local_dev_password`) est réservé au développement local. Pour le remplacer, définissez `DB_PASSWORD` dans un fichier `.env` à la racine avant de lancer Compose. Ne réutilisez jamais cette valeur par défaut en production.
 
@@ -365,7 +379,17 @@ docker compose down
 
 > [!IMPORTANT]
 > Le port gRPC `50051` est exposé pour les clients locaux. Le mot de passe de développement ne convient pas à un environnement partagé ou de production.
-> La synchronisation automatique TypeORM est activée : avant tout déploiement en production, la remplacer par des migrations versionnées.
+
+### Flux gRPC de commande
+
+`FinalizeCommand` reçoit une clé d'idempotence, les articles, leurs quantités et personnalisations, et le total en centimes. Le service vérifie le catalogue et le prix, persiste un instantané de la commande, puis demande le paiement. Il retourne uniquement la référence courte à neuf chiffres. Pour les options incluses dans le prix, le client précise `includedQuantity` et le service vérifie les limites du groupe.
+
+La référence complète transmise au paiement est `YYYY-MM-DD-` suivie de la référence courte ; le compteur est journalier en UTC et recommence à `000000001` après `999999999`. Pour distinguer un éventuel bouclage, Paiement doit renvoyer **la référence complète et l'horodatage UTC exact** reçus dans `PaymentConfirmed`. Seul un certificat signé directement par la CA Paiement dédiée peut appeler cette méthode. Le service transmet ensuite au Ticket la date, la référence courte, les ingrédients et les personnalisations enregistrés.
+
+En cas d'échec d'un appel interservice, l'état reste enregistré et une erreur gRPC est renvoyée : l'appelant doit réessayer avec la même clé ou la même confirmation. Une clé de finalisation réutilisée avec un contenu différent est refusée. Les contrats proposés pour Paiement et Ticket imposent une clé d'idempotence ; leurs futures implémentations doivent dédupliquer leurs propres opérations. Les montants sont limités aux entiers représentables exactement par JavaScript.
+
+Les tests d'intégration sont ignorés par défaut. Pour les exécuter, fournir `COMMAND_TEST_DB_PORT` pour une base PostgreSQL **jetable** locale nommée `isolated_test` (utilisateur et mot de passe `isolated_test`), et `COMMAND_TEST_CERT_DIR` pour un dossier de certificats de test. Ces tests écrivent dans la base : ne jamais les pointer vers une base partagée.
+Le dossier de test doit contenir trois CA (`server-ca.crt`, `client-ca.crt`, `payment-ca.crt`) et trois paires certificat/clé (`command`, `gateway`, `payer`). Chaque paire est signée respectivement par sa CA ; le certificat serveur `command` doit couvrir `localhost` et être utilisable comme client et serveur.
 
 ---
 

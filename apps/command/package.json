@@ -14,6 +14,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "migrate": "node --env-file-if-exists=.env dist/migrate.js",
     "seed": "node --env-file-if-exists=.env dist/seed.js",
     "lint": "eslint src",
     "typecheck": "pnpm --filter @makido/contracts build && tsc --project tsconfig.build.json --noEmit --incremental false",

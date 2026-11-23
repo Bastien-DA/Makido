@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package ticket;
+
+service TicketService {
+  rpc CreateTicket (CreateTicketRequest) returns (CreateTicketResponse);
+}
+
+message TicketCustomization {
+  string groupName = 1;
+  string optionName = 2;
+  uint32 quantity = 3;
+  uint32 includedQuantity = 4;
+}
+
+message TicketLine {
+  string articleId = 1;
+  string name = 2;
+  uint32 quantity = 3;
+  repeated string ingredients = 4;
+  repeated TicketCustomization customizations = 5;
+}
+
+message CreateTicketRequest {
+  string reference = 1;
+  string createdAtUtc = 2;
+  string shortReference = 3;
+  repeated TicketLine items = 4;
+  string idempotencyKey = 5;
+}
+
+message CreateTicketResponse {}

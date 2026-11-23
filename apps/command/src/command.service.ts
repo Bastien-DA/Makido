@@ -1,3 +1,5 @@
+import { status } from '@grpc/grpc-js';
+import { rpcError } from '@makido/contracts/grpc';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -18,6 +20,7 @@ export interface CreateArticleDto {
   isAvailable?: boolean;
   displayOrder?: number;
   allergens?: null | string[];
+  ingredients?: string[];
   prepTimeSeconds?: null | number;
   customizations?: ArticleCustomizationGroup[];
 }
@@ -30,6 +33,18 @@ export class CommandService {
   ) {}
 
   async createArticle(data: CreateArticleDto): Promise<Article> {
+    if (
+      !Array.isArray(data.ingredients) ||
+      data.ingredients.length === 0 ||
+      data.ingredients.some(
+        (ingredient) => typeof ingredient !== 'string' || !ingredient.trim(),
+      )
+    ) {
+      throw rpcError(
+        status.INVALID_ARGUMENT,
+        'Les ingrédients de l’article sont requis.',
+      );
+    }
     const customizations = validateArticleCustomizations(
       data.customizations ?? [],
     );

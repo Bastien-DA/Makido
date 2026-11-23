@@ -1,3 +1,5 @@
+import type { ServerUnaryCall } from '@grpc/grpc-js';
+
 import { status } from '@grpc/grpc-js';
 import { rpcError } from '@makido/contracts/grpc';
 import { Controller } from '@nestjs/common';
@@ -5,6 +7,8 @@ import { GrpcMethod } from '@nestjs/microservices';
 
 import { CommandService, type CreateArticleDto } from './command.service.js';
 import { ArticleCategory } from './entities/article.entity.js';
+import { assertPaymentIdentity } from './mtls.js';
+import { type FinalizeCommandRequest, OrderService } from './order.service.js';
 
 interface FindByIdRequest {
   id: string;
@@ -22,7 +26,26 @@ interface UpdateAvailabilityRequest {
 
 @Controller()
 export class CommandController {
-  constructor(private readonly commandService: CommandService) {}
+  constructor(
+    private readonly commandService: CommandService,
+    private readonly orderService: OrderService,
+  ) {}
+
+  @GrpcMethod('CommandService', 'FinalizeCommand')
+  finalizeCommand(data: FinalizeCommandRequest) {
+    return this.orderService.finalize(data);
+  }
+
+  @GrpcMethod('CommandService', 'PaymentConfirmed')
+  paymentConfirmed(
+    data: { reference: string; createdAtUtc: string },
+    _metadata: unknown,
+    call: ServerUnaryCall<unknown, unknown>,
+  ) {
+    assertPaymentIdentity(call);
+
+    return this.orderService.confirmPayment(data.reference, data.createdAtUtc);
+  }
 
   @GrpcMethod('CommandService', 'CreateArticle')
   createArticle(data: CreateArticleDto) {

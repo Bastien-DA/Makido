@@ -21,6 +21,17 @@ try {
       },
     })
     .execute();
+  const parameters = seedArticles.flatMap((article) => [
+    article.id,
+    article.ingredients,
+  ]);
+  const values = seedArticles
+    .map((_, index) => `($${index * 2 + 1}::uuid, $${index * 2 + 2}::text[])`)
+    .join(', ');
+  await dataSource.query(
+    `UPDATE articles SET ingredients = seed.ingredients FROM (VALUES ${values}) AS seed(id, ingredients) WHERE articles.id = seed.id AND cardinality(articles.ingredients) = 0`,
+    parameters,
+  );
   console.log('Fixtures des articles chargées.');
 } finally {
   await dataSource.destroy();

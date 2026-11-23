@@ -43,9 +43,9 @@
   "devDependencies": {
     "@grpc/grpc-js": "1.14.6",
     "@grpc/proto-loader": "0.8.1",
-    "@nestjs/common": "12.2.0",
-    "@nestjs/core": "12.2.0",
-    "@nestjs/microservices": "12.2.0",
+    "@nestjs/common": "12.6.0",
+    "@nestjs/core": "12.6.0",
+    "@nestjs/microservices": "12.6.0",
     "@makido/eslint": "workspace:*",
     "@makido/tsconfig": "workspace:*",
     "@types/node": "24.19.2",
