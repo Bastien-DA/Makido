@@ -334,11 +334,21 @@ git clone <URL_DU_DEPOT>
 cd Makido
 
 # 3. Installer les dépendances
-yarn install
+pnpm install
 
 # 4. Configurer les variables d'environnement
 # Créer les fichiers .env nécessaires à partir des .env.example disponibles.
 ```
+
+### Borne de commande
+
+Pour démarrer la borne React/Vite depuis la racine :
+
+```bash
+pnpm --filter @makido/borne dev
+```
+
+Cette première version est une page d'accueil minimale : le catalogue, le panier et la connexion à la Gateway restent à développer.
 
 ### Démarrage des services
 
@@ -359,7 +369,7 @@ Le Runner étant intégré au MS Export Comptable, son mode de lancement dépend
 Les commandes exactes de lancement seront définies dans les scripts `package.json` du Monorepo.
 
 > [!IMPORTANT]
-> La Gateway dépend de la disponibilité des microservices auxquels elle transmet les requêtes. Il est nécessaire de vérifier leur initialisation et leur accessibilité avant de démarrer les interfaces frontend.
+> La Gateway dépend de la disponibilité des microservices auxquels elle transmet les requêtes. La borne minimale actuelle peut toutefois démarrer sans Gateway.
 
 ---
 
