@@ -1,0 +1,14 @@
+name: makido
+
+services:
+
+  payment-db:
+    image: mongo:8
+    ports: ['${PAYMENT_DB_PORT:-27018}:27017']
+    volumes:
+      - payment-db:/data/db
+      # Fixtures, run by the image on the first start only (empty volume)
+      - ./apps/payment/fixtures:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  payment-db:
