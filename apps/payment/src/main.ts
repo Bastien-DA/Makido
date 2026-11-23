@@ -1,8 +1,15 @@
+import { grpcOptions } from '@makido/contracts/grpc';
 import { NestFactory } from '@nestjs/core';
 
 import { AppModule } from './app.module.js';
+import { config } from './config.js';
 
-// Placeholder: no server yet. The gRPC server comes with CreateTransaction,
-// the HTTP server with the Stripe callback
-const app = await NestFactory.createApplicationContext(AppModule);
-app.enableShutdownHooks();
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice(
+    AppModule,
+    grpcOptions('payment', config.grpcUrl),
+  );
+  app.enableShutdownHooks();
+  await app.listen();
+}
+await bootstrap();
