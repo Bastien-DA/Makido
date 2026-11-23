@@ -348,7 +348,7 @@ docker compose up --build
 Une fois le service démarré, charger les données de démonstration manuellement depuis un autre terminal :
 
 ```bash
-docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U command_user -d command_db < apps/command/fixtures/01-seed-articles.sql
+docker compose exec -w /workspace/apps/command ms-command node dist/seed.js
 ```
 
 Cette commande est réservée au développement. Elle complète les personnalisations vides des articles existants sans modifier leurs autres champs ni remplacer des personnalisations non vides.

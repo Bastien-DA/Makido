@@ -14,7 +14,7 @@
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
-    "seed": "node --env-file=.env -e \"import('node:fs').then(async ({ readFileSync }) => { const { default: pg } = await import('pg'); const client = new pg.Client({ host: process.env.DB_HOST, port: Number(process.env.DB_PORT || 5432), user: process.env.DB_USER, password: process.env.DB_PASSWORD, database: process.env.DB_NAME }); await client.connect(); await client.query(readFileSync('fixtures/01-seed-articles.sql', 'utf8')); await client.end(); console.log('Seed SQL exécuté avec succès.'); });\"",
+    "seed": "node --env-file-if-exists=.env dist/seed.js",
     "lint": "eslint src",
     "typecheck": "pnpm --filter @makido/contracts build && tsc --project tsconfig.build.json --noEmit --incremental false",
     "test": "vitest run",

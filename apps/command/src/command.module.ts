@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { CommandController } from './command.controller.js';
 import { CommandService } from './command.service.js';
+import { databaseOptions } from './database-options.js';
 import { Article } from './entities/article.entity.js';
 
 @Module({
@@ -15,13 +16,7 @@ import { Article } from './entities/article.entity.js';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DB_HOST'),
-        port: Number(config.get<string>('DB_PORT') ?? 5432),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASSWORD'),
-        database: config.get<string>('DB_NAME'),
-        entities: [Article],
+        ...databaseOptions(config),
         synchronize: true,
       }),
     }),
