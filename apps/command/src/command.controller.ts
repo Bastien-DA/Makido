@@ -1,3 +1,5 @@
+import { status } from '@grpc/grpc-js';
+import { rpcError } from '@makido/contracts/grpc';
 import { Controller } from '@nestjs/common';
 import { GrpcMethod } from '@nestjs/microservices';
 
@@ -8,16 +10,9 @@ interface FindByIdRequest {
   id: string;
 }
 
-interface FindAllKioskRequest {
-  onlyAvailable?: boolean;
-}
-
 interface GetArticlesRequest {
   onlyAvailable?: boolean;
-}
-
-interface FindByCategoryRequest {
-  category: ArticleCategory;
+  category?: ArticleCategory;
 }
 
 interface UpdateAvailabilityRequest {
@@ -41,27 +36,20 @@ export class CommandController {
 
   @GrpcMethod('CommandService', 'GetArticles')
   async getArticles(data?: GetArticlesRequest) {
-    const articles = await this.commandService.findAllForKiosk(
-      data?.onlyAvailable ?? true,
-    );
+    const category = data?.category;
+    if (
+      category !== undefined &&
+      !Object.values(ArticleCategory).includes(category)
+    ) {
+      throw rpcError(status.INVALID_ARGUMENT, 'Catégorie d’article invalide.');
+    }
 
-    return { articles };
-  }
-
-  @GrpcMethod('CommandService', 'FindArticlesKiosk')
-  async findArticlesKiosk(data?: FindAllKioskRequest) {
-    const articles = await this.commandService.findAllForKiosk(
-      data?.onlyAvailable ?? false,
-    );
-
-    return { articles };
-  }
-
-  @GrpcMethod('CommandService', 'FindArticlesByCategory')
-  async findArticlesByCategory(data: FindByCategoryRequest) {
-    const articles = await this.commandService.findByCategory(data.category);
-
-    return { articles };
+    return {
+      articles: await this.commandService.findArticles(
+        data?.onlyAvailable ?? true,
+        category,
+      ),
+    };
   }
 
   @GrpcMethod('CommandService', 'UpdateArticleAvailability')

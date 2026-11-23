@@ -339,11 +339,19 @@ pnpm install
 
 ### Démarrage local avec Docker Compose
 
-Le Compose racine démarre le MS Commande et PostgreSQL. Il publie le service gRPC sur le port `50051`; PostgreSQL crée le schéma et insère les articles de démonstration au premier démarrage d'un volume neuf.
+Le Compose racine réutilise la configuration du MS Commande et démarre ce service avec PostgreSQL (Docker Compose 2.20 ou supérieur pour `include`). Il publie le service gRPC sur le port `50051`. TypeORM crée le schéma au démarrage du service.
 
 ```bash
 docker compose up --build
 ```
+
+Une fois le service démarré, charger les données de démonstration manuellement depuis un autre terminal :
+
+```bash
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U command_user -d command_db < apps/command/fixtures/01-seed-articles.sql
+```
+
+Cette commande est réservée au développement. Elle complète les personnalisations vides des articles existants sans modifier leurs autres champs ni remplacer des personnalisations non vides.
 
 Le mot de passe PostgreSQL par défaut (`local_dev_password`) est réservé au développement local. Pour le remplacer, définissez `DB_PASSWORD` dans un fichier `.env` à la racine avant de lancer Compose. Ne réutilisez jamais cette valeur par défaut en production.
 
@@ -351,12 +359,13 @@ Le mot de passe PostgreSQL par défaut (`local_dev_password`) est réservé au d
 docker compose down
 ```
 
-`docker compose down` conserve le volume et les données de la base. Les scripts d'initialisation ne sont exécutés que lors de la création initiale du volume.
+`docker compose down` conserve le volume et les données de la base.
 
 À ce stade, les autres composants décrits dans l'architecture (frontends, gateway, services de paiement/ticket/export, Redis et job-runner) ne sont pas encore inclus dans le Compose exécutable.
 
 > [!IMPORTANT]
 > Le port gRPC `50051` est exposé pour les clients locaux. Le mot de passe de développement ne convient pas à un environnement partagé ou de production.
+> La synchronisation automatique TypeORM est activée : avant tout déploiement en production, la remplacer par des migrations versionnées.
 
 ---
 

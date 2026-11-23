@@ -1,24 +1,5 @@
-services:
-  ms-command:
-    build:
-      context: .
-      dockerfile: apps/command/Dockerfile
-    container_name: ms-command
-    ports:
-      - '50051:50051'
-    environment:
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: command_db
-      DB_USER: command_user
-      DB_PASSWORD: ${DB_PASSWORD:-local_dev_password}
-      GRPC_URL: 0.0.0.0:50051
-    depends_on:
-      postgres:
-        condition: service_healthy
-    networks:
-      - ms-command-net
-    restart: unless-stopped
+include:
+  - apps/command/docker-compose.yml
 
   payment-db:
     image: mongo:8
@@ -28,32 +9,5 @@ services:
       # Fixtures, run by the image on the first start only (empty volume)
       - ./apps/payment/fixtures:/docker-entrypoint-initdb.d:ro
 
-  postgres:
-    image: postgres:19
-    container_name: ms-command-db
-    ports:
-      - '5432:5432'
-    environment:
-      POSTGRES_DB: command_db
-      POSTGRES_USER: command_user
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-local_dev_password}
-    volumes:
-      - pgdata:/var/lib/postgresql
-      - ./apps/command/fixtures/00-init-schema.sql:/docker-entrypoint-initdb.d/00-init-schema.sql:ro
-      - ./apps/command/fixtures/01-seed-articles.sql:/docker-entrypoint-initdb.d/01-seed-articles.sql:ro
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U command_user -d command_db']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    networks:
-      - ms-command-net
-    restart: unless-stopped
-
-networks:
-  ms-command-net:
-    driver: bridge
-
 volumes:
   pgdata:
-  payment-db:

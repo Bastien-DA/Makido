@@ -31,8 +31,6 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD:-local_dev_password}
     volumes:
       - pgdata:/var/lib/postgresql
-      - ./fixtures/00-init-schema.sql:/docker-entrypoint-initdb.d/00-init-schema.sql:ro
-      - ./fixtures/01-seed-articles.sql:/docker-entrypoint-initdb.d/01-seed-articles.sql:ro
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U command_user -d command_db']
       interval: 5s

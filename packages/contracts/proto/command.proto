@@ -15,8 +15,6 @@ service CommandService {
   rpc CreateArticle (CreateArticleRequest) returns (ArticleResponse);
   rpc FindArticleById (FindArticleByIdRequest) returns (ArticleResponse);
   rpc GetArticles (GetArticlesRequest) returns (ArticleListResponse);
-  rpc FindArticlesKiosk (FindArticlesKioskRequest) returns (ArticleListResponse);
-  rpc FindArticlesByCategory (FindArticlesByCategoryRequest) returns (ArticleListResponse);
   rpc UpdateArticleAvailability (UpdateArticleAvailabilityRequest) returns (ArticleResponse);
   rpc RemoveArticle (RemoveArticleRequest) returns (RemoveArticleResponse);
 }
@@ -36,16 +34,9 @@ message FindArticleByIdRequest {
   string id = 1;
 }
 
-message FindArticlesKioskRequest {
-  optional bool onlyAvailable = 1;
-}
-
 message GetArticlesRequest {
   optional bool onlyAvailable = 1;
-}
-
-message FindArticlesByCategoryRequest {
-  ArticleCategory category = 1;
+  optional ArticleCategory category = 2;
 }
 
 message UpdateArticleAvailabilityRequest {
