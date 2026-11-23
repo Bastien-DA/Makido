@@ -334,11 +334,23 @@ git clone <URL_DU_DEPOT>
 cd Makido
 
 # 3. Installer les dépendances
-yarn install
+pnpm install
 
 # 4. Configurer les variables d'environnement
 # Créer les fichiers .env nécessaires à partir des .env.example disponibles.
 ```
+
+### Application SPA
+
+L'application React/Vite se trouve dans `apps/spa`. Pour la lancer depuis la racine :
+
+```bash
+pnpm --filter @makido/spa dev
+```
+
+Elle propose trois pages : accueil (`/`), borne (`/borne`) et cuisine (`/cuisine`). Le catalogue, la commande et le suivi en cuisine restent à développer. La SPA actuelle ne nécessite pas la Gateway.
+
+En production, configurer le serveur web pour renvoyer `index.html` sur ces routes afin de permettre leur accès direct et leur rechargement.
 
 ### Démarrage des services
 
@@ -359,7 +371,7 @@ Le Runner étant intégré au MS Export Comptable, son mode de lancement dépend
 Les commandes exactes de lancement seront définies dans les scripts `package.json` du Monorepo.
 
 > [!IMPORTANT]
-> La Gateway dépend de la disponibilité des microservices auxquels elle transmet les requêtes. Il est nécessaire de vérifier leur initialisation et leur accessibilité avant de démarrer les interfaces frontend.
+> La Gateway dépend de la disponibilité des microservices auxquels elle transmet les requêtes. La SPA minimale peut toutefois démarrer sans Gateway.
 
 ---
 
