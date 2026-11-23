@@ -297,7 +297,7 @@ Cette organisation évite la duplication de code et garantit une cohérence tech
 | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white) | Base de données des commandes |
 | ![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=flat&logo=mongodb&logoColor=white) | Base de données des paiements |
 
-Les versions exactes des outils seront précisées en fonction des configurations retenues pour le Monorepo et ses applications.
+Les versions utilisées par le monorepo sont déclarées dans `package.json` et `pnpm-workspace.yaml`.
 
 ### Configuration (`.env`)
 
@@ -334,32 +334,29 @@ git clone <URL_DU_DEPOT>
 cd Makido
 
 # 3. Installer les dépendances
-yarn install
-
-# 4. Configurer les variables d'environnement
-# Créer les fichiers .env nécessaires à partir des .env.example disponibles.
+pnpm install
 ```
 
-### Démarrage des services
+### Démarrage local avec Docker Compose
 
-Les bases de données doivent être opérationnelles avant le lancement des microservices.
+Le Compose racine démarre le MS Commande et PostgreSQL. Il publie le service gRPC sur le port `50051`; PostgreSQL crée le schéma et insère les articles de démonstration au premier démarrage d'un volume neuf.
 
-Ordre de démarrage recommandé :
+```bash
+docker compose up --build
+```
 
-1. PostgreSQL et MongoDB.
-2. MS Commande.
-3. MS Paiement.
-4. MS Ticket.
-5. MS Export Comptable.
-6. Gateway.
-7. Applications frontend.
+Le mot de passe PostgreSQL par défaut (`local_dev_password`) est réservé au développement local. Pour le remplacer, définissez `DB_PASSWORD` dans un fichier `.env` à la racine avant de lancer Compose. Ne réutilisez jamais cette valeur par défaut en production.
 
-Le Runner étant intégré au MS Export Comptable, son mode de lancement dépendra du mécanisme de déclenchement qui sera retenu.
+```bash
+docker compose down
+```
 
-Les commandes exactes de lancement seront définies dans les scripts `package.json` du Monorepo.
+`docker compose down` conserve le volume et les données de la base. Les scripts d'initialisation ne sont exécutés que lors de la création initiale du volume.
+
+À ce stade, les autres composants décrits dans l'architecture (frontends, gateway, services de paiement/ticket/export, Redis et job-runner) ne sont pas encore inclus dans le Compose exécutable.
 
 > [!IMPORTANT]
-> La Gateway dépend de la disponibilité des microservices auxquels elle transmet les requêtes. Il est nécessaire de vérifier leur initialisation et leur accessibilité avant de démarrer les interfaces frontend.
+> Le port gRPC `50051` est exposé pour les clients locaux. Le mot de passe de développement ne convient pas à un environnement partagé ou de production.
 
 ---
 

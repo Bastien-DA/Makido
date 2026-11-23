@@ -1,4 +1,5 @@
-import { type status, Metadata } from '@grpc/grpc-js';
+import type { status } from '@grpc/grpc-js';
+
 import {
   type GrpcOptions,
   RpcException,

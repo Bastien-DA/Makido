@@ -1,7 +1,5 @@
--- Demo articles, inserted by the PostgreSQL image on the first start
--- (empty volume only).
-
-CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+-- Demo articles, inserted by the PostgreSQL image after 00-init-schema.sql
+-- on the first start (empty volume only).
 
 INSERT INTO articles (
     "id",
@@ -257,3 +255,87 @@ VALUES
         NOW() - INTERVAL '30 hours'
     )
     ON CONFLICT ("id") DO NOTHING;
+
+
+INSERT INTO articles (
+    "id",
+    "name",
+    "description",
+    "category",
+    "price",
+    "imageUrl",
+    "isAvailable",
+    "allergens",
+    "customizations",
+    "createdAt",
+    "updatedAt"
+)
+VALUES
+    (
+        '11111111-1111-4111-8111-111111111121',
+        'Tokyo Saumon',
+        'Pain de riz au sésame, saumon frais, avocat et concombre.',
+        'BURGER',
+        11.90,
+        'https://cdn.example.com/kiosk/burgers/tokyo-saumon.png',
+        true,
+        'poisson,soja,sesame',
+        '[
+          {"id":"saumon","name":"Portions de saumon","minSelections":1,"maxSelections":3,"includedSelections":1,"options":[{"id":"morceau-saumon","name":"Morceau de saumon","additionalPrice":2.20}]},
+          {"id":"sauces","name":"Sauces","minSelections":0,"maxSelections":2,"includedSelections":0,"options":[{"id":"ponzu-yuzu","name":"Ponzu yuzu","additionalPrice":0.50},{"id":"mayo-sesame","name":"Mayonnaise sésame","additionalPrice":0.50},{"id":"mayo-spicy","name":"Mayonnaise épicée","additionalPrice":0.50}]},
+          {"id":"supplements","name":"Suppléments","minSelections":0,"maxSelections":3,"includedSelections":0,"options":[{"id":"avocat","name":"Avocat","additionalPrice":1.00},{"id":"cream-cheese","name":"Cream cheese","additionalPrice":0.80},{"id":"oignons-croustillants","name":"Oignons croustillants","additionalPrice":0.60}]}
+        ]'::jsonb,
+        NOW(),
+        NOW()
+    ),
+    (
+        '11111111-1111-4111-8111-111111111122',
+        'Thon Épicé',
+        'Pain de riz, thon mariné, concombre, avocat et sésame.',
+        'BURGER',
+        10.90,
+        'https://cdn.example.com/kiosk/burgers/thon-epice.png',
+        true,
+        'poisson,soja,sesame',
+        '[
+          {"id":"thon","name":"Portions de thon","minSelections":1,"maxSelections":3,"includedSelections":1,"options":[{"id":"morceau-thon","name":"Morceau de thon","additionalPrice":2.00}]},
+          {"id":"sauces","name":"Sauces","minSelections":0,"maxSelections":2,"includedSelections":0,"options":[{"id":"mayo-spicy","name":"Mayonnaise épicée","additionalPrice":0.50},{"id":"teriyaki","name":"Teriyaki","additionalPrice":0.50},{"id":"ponzu-yuzu","name":"Ponzu yuzu","additionalPrice":0.50}]},
+          {"id":"supplements","name":"Suppléments","minSelections":0,"maxSelections":3,"includedSelections":0,"options":[{"id":"avocat","name":"Avocat","additionalPrice":1.00},{"id":"masago","name":"Œufs de poisson","additionalPrice":1.20},{"id":"oignons-croustillants","name":"Oignons croustillants","additionalPrice":0.60}]}
+        ]'::jsonb,
+        NOW(),
+        NOW()
+    ),
+    (
+        '11111111-1111-4111-8111-111111111123',
+        'Ebi Tempura',
+        'Pain de riz, crevettes tempura, salade croquante et avocat.',
+        'BURGER',
+        10.50,
+        'https://cdn.example.com/kiosk/burgers/ebi-tempura.png',
+        true,
+        'crustaces,gluten,soja,sesame',
+        '[
+          {"id":"crevettes","name":"Crevettes tempura","minSelections":1,"maxSelections":3,"includedSelections":1,"options":[{"id":"crevette-tempura","name":"Crevette tempura","additionalPrice":1.80}]},
+          {"id":"sauces","name":"Sauces","minSelections":0,"maxSelections":2,"includedSelections":0,"options":[{"id":"mayo-yuzu","name":"Mayonnaise yuzu","additionalPrice":0.50},{"id":"teriyaki","name":"Teriyaki","additionalPrice":0.50},{"id":"mayo-spicy","name":"Mayonnaise épicée","additionalPrice":0.50}]},
+          {"id":"supplements","name":"Suppléments","minSelections":0,"maxSelections":3,"includedSelections":0,"options":[{"id":"avocat","name":"Avocat","additionalPrice":1.00},{"id":"cream-cheese","name":"Cream cheese","additionalPrice":0.80},{"id":"edamame","name":"Edamame","additionalPrice":0.70}]}
+        ]'::jsonb,
+        NOW(),
+        NOW()
+    ),
+    (
+        '11111111-1111-4111-8111-111111111124',
+        'Umami Végétal',
+        'Pain de riz au sésame, tofu grillé, shiitakés, chou rouge et avocat.',
+        'BURGER',
+        9.90,
+        'https://cdn.example.com/kiosk/burgers/umami-vegetal.png',
+        true,
+        'soja,sesame',
+        '[
+          {"id":"sauces","name":"Sauces","minSelections":0,"maxSelections":2,"includedSelections":0,"options":[{"id":"mayo-yuzu","name":"Mayonnaise yuzu","additionalPrice":0.50},{"id":"teriyaki","name":"Teriyaki","additionalPrice":0.50},{"id":"ponzu-yuzu","name":"Ponzu yuzu","additionalPrice":0.50}]},
+          {"id":"supplements","name":"Suppléments","minSelections":0,"maxSelections":3,"includedSelections":0,"options":[{"id":"avocat","name":"Avocat","additionalPrice":1.00},{"id":"shiitake","name":"Shiitakés","additionalPrice":0.90},{"id":"cream-cheese","name":"Cream cheese","additionalPrice":0.80},{"id":"edamame","name":"Edamame","additionalPrice":0.70}]}
+        ]'::jsonb,
+        NOW(),
+        NOW()
+    )
+ON CONFLICT ("id") DO NOTHING;

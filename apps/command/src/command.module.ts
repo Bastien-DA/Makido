@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Article } from './entities/article.entity.js';
+
 import { CommandController } from './command.controller.js';
 import { CommandService } from './command.service.js';
+import { Article } from './entities/article.entity.js';
 
 @Module({
   imports: [
@@ -16,7 +17,7 @@ import { CommandService } from './command.service.js';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         host: config.get<string>('DB_HOST'),
-        port: Number(config.get<number>('DB_PORT') ?? 5432),
+        port: Number(config.get<string>('DB_PORT') ?? 5432),
         username: config.get<string>('DB_USER'),
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),

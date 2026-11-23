@@ -14,6 +14,7 @@ enum ArticleCategory {
 service CommandService {
   rpc CreateArticle (CreateArticleRequest) returns (ArticleResponse);
   rpc FindArticleById (FindArticleByIdRequest) returns (ArticleResponse);
+  rpc GetArticles (GetArticlesRequest) returns (ArticleListResponse);
   rpc FindArticlesKiosk (FindArticlesKioskRequest) returns (ArticleListResponse);
   rpc FindArticlesByCategory (FindArticlesByCategoryRequest) returns (ArticleListResponse);
   rpc UpdateArticleAvailability (UpdateArticleAvailabilityRequest) returns (ArticleResponse);
@@ -28,6 +29,7 @@ message CreateArticleRequest {
   optional string imageUrl = 5;
   optional bool isAvailable = 6;
   repeated string allergens = 7;
+  repeated CustomizationGroup customizations = 8;
 }
 
 message FindArticleByIdRequest {
@@ -35,6 +37,10 @@ message FindArticleByIdRequest {
 }
 
 message FindArticlesKioskRequest {
+  optional bool onlyAvailable = 1;
+}
+
+message GetArticlesRequest {
   optional bool onlyAvailable = 1;
 }
 
@@ -62,6 +68,22 @@ message ArticleResponse {
   repeated string allergens = 8;
   string createdAt = 9;
   string updatedAt = 10;
+  repeated CustomizationGroup customizations = 11;
+}
+
+message CustomizationGroup {
+  string id = 1;
+  string name = 2;
+  uint32 minSelections = 3;
+  uint32 maxSelections = 4;
+  uint32 includedSelections = 5;
+  repeated CustomizationOption options = 6;
+}
+
+message CustomizationOption {
+  string id = 1;
+  string name = 2;
+  double additionalPrice = 3;
 }
 
 message ArticleListResponse {
