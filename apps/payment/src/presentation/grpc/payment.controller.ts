@@ -18,7 +18,6 @@ import {
 } from '../../domain/payment.errors.js';
 import { PaymentService } from '../../domain/payment.service.js';
 
-/** gRPC entry point: translates the contract to the business and back, nothing more */
 @Controller()
 export class PaymentController {
   constructor(private readonly service: PaymentService) {}
@@ -42,7 +41,6 @@ function toDto(payment: Payment): PaymentDto {
   return {
     ...payment,
     createdAt: payment.createdAt.toISOString(),
-    // proto3 has no "absent" for a string: empty means not set
     externalId: payment.externalId ?? '',
     updatedAt: payment.updatedAt.toISOString(),
   };
@@ -59,6 +57,5 @@ function toRpcError(error: unknown): unknown {
     return rpcError(status.UNAVAILABLE, error.message);
   }
 
-  // Unexpected (database down…): Nest answers INTERNAL/UNKNOWN
   return error;
 }
