@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
-import type { PaymentStatus } from '../payment.js';
+import type { PaymentStatus } from '../../../domain/payment.js';
 
 const STATUSES: PaymentStatus[] = ['FAILED', 'PENDING', 'SUCCEEDED'];
 

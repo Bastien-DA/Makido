@@ -2,9 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { type HydratedDocument, isValidObjectId, type Model } from 'mongoose';
 
-import type { FinalStatus, NewPayment, Payment } from '../payment.js';
+import type {
+  FinalStatus,
+  NewPayment,
+  Payment,
+} from '../../../domain/payment.js';
 
-import { PaymentRepository } from '../payment.repository.js';
+import { PaymentConflictError } from '../../../domain/payment.errors.js';
+import { PaymentRepository } from '../../../domain/ports/payment.repository.js';
 import { MongoPayment } from './payment.schema.js';
 
 type PaymentDocument = HydratedDocument<MongoPayment>;
@@ -19,7 +24,17 @@ export class MongoPaymentRepository extends PaymentRepository {
   }
 
   async create(data: NewPayment): Promise<Payment> {
-    return toPayment(await this.payments.create(data));
+    try {
+      return toPayment(await this.payments.create(data));
+    } catch (error) {
+      // The unique index on PENDING payments: two calls at the same time
+      if (isDuplicateKeyError(error)) {
+        throw new PaymentConflictError(
+          `Order ${data.orderId} already has a pending payment`,
+        );
+      }
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<Payment | undefined> {
@@ -63,6 +78,10 @@ export class MongoPaymentRepository extends PaymentRepository {
         .exec(),
     );
   }
+}
+
+function isDuplicateKeyError(error: unknown): boolean {
+  return error instanceof Error && 'code' in error && error.code === 11_000;
 }
 
 // The only place that knows the Mongo format (_id as ObjectId, etc.)

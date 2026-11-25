@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import Stripe from 'stripe';
 
-import { config } from '../../config.js';
+import { config } from '../../../config.js';
 import {
   type InitiatedPayment,
   InvalidCallbackError,
   type PaymentOutcome,
   PaymentProvider,
   type PaymentRequest,
-} from '../payment-provider.js';
+} from '../../../domain/ports/payment-provider.js';
 
 /**
  * Stripe Checkout: Stripe hosts the payment page, we only redirect to it.

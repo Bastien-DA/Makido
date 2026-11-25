@@ -1,6 +1,7 @@
-import type { FinalStatus, NewPayment, Payment } from './payment.js';
+import type { FinalStatus, NewPayment, Payment } from '../payment.js';
 
 export abstract class PaymentRepository {
+  /** Throws PaymentConflictError when the order already has a PENDING one */
   abstract create(data: NewPayment): Promise<Payment>;
 
   abstract findById(id: string): Promise<Payment | undefined>;

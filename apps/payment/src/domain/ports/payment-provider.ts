@@ -1,4 +1,4 @@
-import type { FinalStatus } from '../payments/payment.js';
+import type { FinalStatus } from '../payment.js';
 
 export interface PaymentRequest {
   /** In cents */
@@ -26,7 +26,6 @@ export class InvalidCallbackError extends Error {
 }
 
 export abstract class PaymentProvider {
-
   abstract findRedirectUrl(externalId: string): Promise<string | undefined>;
 
   abstract initiatePayment(request: PaymentRequest): Promise<InitiatedPayment>;
