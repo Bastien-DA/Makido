@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { Article } from './entities/article.entity.js';
+import { Article } from '../../articles/entities/article.entity.js';
 import { priceLine } from './order-pricing.js';
 
 const article = {

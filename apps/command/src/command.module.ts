@@ -2,12 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { CommandController } from './command.controller.js';
-import { CommandService } from './command.service.js';
-import { databaseOptions } from './database-options.js';
-import { DownstreamService } from './downstream.service.js';
-import { Article } from './entities/article.entity.js';
-import { OrderService } from './order.service.js';
+import { databaseOptions } from './core/database/database-options.js';
+import { GrpcClientsModule } from './core/grpc/index.js';
+import { ArticlesModule } from './features/articles/articles.module.js';
+import { OrdersModule } from './features/orders/orders.module.js';
 
 @Module({
   imports: [
@@ -22,9 +20,9 @@ import { OrderService } from './order.service.js';
         synchronize: false,
       }),
     }),
-    TypeOrmModule.forFeature([Article]),
+    GrpcClientsModule,
+    ArticlesModule,
+    OrdersModule,
   ],
-  controllers: [CommandController],
-  providers: [CommandService, OrderService, DownstreamService],
 })
 export class CommandModule {}

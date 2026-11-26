@@ -2,9 +2,9 @@ import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { describe, expect, it, vi } from 'vitest';
 
-import { validateArticleCustomizations } from './article-customizations.js';
-import { CommandService } from './command.service.js';
-import { Article, ArticleCategory } from './entities/article.entity.js';
+import { validateArticleCustomizations } from '../article-customizations.js';
+import { ArticlesService } from './articles.service.js';
+import { Article, ArticleCategory } from '../../entities/article.entity.js';
 
 describe('article filters', () => {
   it('combines category and availability without changing the existing sort order', async () => {
@@ -13,11 +13,11 @@ describe('article filters', () => {
       .mockResolvedValue([]);
     const module = await Test.createTestingModule({
       providers: [
-        CommandService,
+        ArticlesService,
         { provide: getRepositoryToken(Article), useValue: { find } },
       ],
     }).compile();
-    const service = module.get(CommandService);
+    const service = module.get(ArticlesService);
 
     await service.findArticles(true, ArticleCategory.BURGER);
     await service.findArticles(false, ArticleCategory.SIDE);

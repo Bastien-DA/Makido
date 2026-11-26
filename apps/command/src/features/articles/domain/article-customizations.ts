@@ -4,13 +4,13 @@ import { rpcError } from '@makido/contracts/grpc';
 import type {
   ArticleCustomizationGroup,
   ArticleCustomizationOption,
-} from './entities/article.entity.js';
+} from '../entities/article.entity.js';
 
 import {
   isNonEmptyString,
   isNonNegativeInteger,
   isRecord,
-} from './common/validation.js';
+} from '../../../core/common/validation.js';
 
 function validateOptions(
   options: unknown,

@@ -2,9 +2,9 @@ import type { DataSourceOptions } from 'typeorm';
 
 import { type ConfigService } from '@nestjs/config';
 
-import { Article } from './entities/article.entity.js';
-import { OrderCounter } from './entities/order-counter.entity.js';
-import { Order } from './entities/order.entity.js';
+import { Article } from '../../features/articles/entities/article.entity.js';
+import { OrderCounter } from '../../features/orders/entities/order-counter.entity.js';
+import { Order } from '../../features/orders/entities/order.entity.js';
 
 export function databaseOptions(config: ConfigService): DataSourceOptions {
   return {

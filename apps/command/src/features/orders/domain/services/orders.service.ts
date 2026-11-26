@@ -4,11 +4,11 @@ import { Injectable } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import { DataSource, In } from 'typeorm';
 
-import { isRecord } from './common/validation.js';
+import { isRecord } from '../../../../core/common/validation.js';
+import { priceLine, type RequestedLine } from '../order-pricing.js';
 import { DownstreamService } from './downstream.service.js';
-import { Article } from './entities/article.entity.js';
-import { Order } from './entities/order.entity.js';
-import { priceLine, type RequestedLine } from './order-pricing.js';
+import {Order} from "../../entities/order.entity.js";
+import {Article} from "../../../articles/entities/article.entity.js";
 
 export interface FinalizeCommandRequest {
   idempotencyKey: string;
@@ -17,7 +17,7 @@ export interface FinalizeCommandRequest {
 }
 
 @Injectable()
-export class OrderService {
+export class OrdersService {
   constructor(
     private readonly dataSource: DataSource,
     private readonly downstream: DownstreamService,
@@ -65,7 +65,7 @@ export class OrderService {
         if (existing.requestHash !== requestHash) {
           throw rpcError(
             status.ALREADY_EXISTS,
-            'Clé d’idempotence déjà utilisée pour une autre commande.',
+            "Clé d'idempotence déjà utilisée pour une autre commande.",
           );
         }
 
@@ -120,8 +120,6 @@ export class OrderService {
       );
     });
 
-    await this.downstream.initiatePayment(order);
-
     return { shortReference: order.shortReference };
   }
 
@@ -146,7 +144,6 @@ export class OrderService {
     const orders = this.dataSource.getRepository(Order);
     const order = await orders.findOneBy({ reference, createdAt: date });
     if (!order) throw rpcError(status.NOT_FOUND, 'Commande introuvable.');
-    if (order.ticketSent) return {};
     await orders.update(order.id, { paymentConfirmed: true });
     await this.downstream.createTicket(order);
     await orders.update(order.id, { ticketSent: true });

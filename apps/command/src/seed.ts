@@ -1,8 +1,8 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
-import { databaseOptions } from './database-options.js';
-import { Article } from './entities/article.entity.js';
+import { databaseOptions } from './core/database/database-options.js';
+import { Article } from './features/articles/entities/article.entity.js';
 import { seedArticles } from './fixtures/articles.js';
 
 const dataSource = new DataSource(databaseOptions(new ConfigService()));

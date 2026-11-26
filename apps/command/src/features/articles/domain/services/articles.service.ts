@@ -4,12 +4,12 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
-import { validateArticleCustomizations } from './article-customizations.js';
+import { validateArticleCustomizations } from '../article-customizations.js';
 import {
   Article,
   ArticleCategory,
   type ArticleCustomizationGroup,
-} from './entities/article.entity.js';
+} from '../../entities/article.entity.js';
 
 export interface CreateArticleDto {
   name: string;
@@ -26,7 +26,7 @@ export interface CreateArticleDto {
 }
 
 @Injectable()
-export class CommandService {
+export class ArticlesService {
   constructor(
     @InjectRepository(Article)
     private readonly articleRepo: Repository<Article>,
@@ -42,7 +42,7 @@ export class CommandService {
     ) {
       throw rpcError(
         status.INVALID_ARGUMENT,
-        'Les ingrédients de l’article sont requis.',
+        "Les ingrédients de l'article sont requis.",
       );
     }
     const customizations = validateArticleCustomizations(

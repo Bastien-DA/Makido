@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSource } from 'typeorm';
 
-import { databaseOptions } from './database-options.js';
+import { databaseOptions } from './core/database/database-options.js';
 import { InitialOrders1760000000000 } from './migrations/initial-orders.js';
 
 const dataSource = new DataSource({

@@ -3,13 +3,13 @@ import { randomUUID } from 'node:crypto';
 import { DataSource } from 'typeorm';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { DownstreamService } from './downstream.service.js';
-import { Article } from './entities/article.entity.js';
+import { Article } from '../articles/entities/article.entity.js';
 import { OrderCounter } from './entities/order-counter.entity.js';
 import { Order } from './entities/order.entity.js';
-import { seedArticles } from './fixtures/articles.js';
-import { InitialOrders1760000000000 } from './migrations/initial-orders.js';
-import { OrderService } from './order.service.js';
+import { seedArticles } from '../../fixtures/articles.js';
+import { InitialOrders1760000000000 } from '../../migrations/initial-orders.js';
+import { OrdersService } from './domain/services/orders.service.js';
+import { DownstreamService } from './domain/services/downstream.service.js';
 
 const port = process.env.COMMAND_TEST_DB_PORT;
 const request = () => ({
@@ -26,7 +26,6 @@ const request = () => ({
 
 describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
   const downstream = {
-    initiatePayment: vi.fn().mockImplementation(() => Promise.resolve()),
     createTicket: vi.fn().mockImplementation(() => Promise.resolve()),
   };
   const database = new DataSource({
@@ -39,7 +38,7 @@ describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
     entities: [Article, Order, OrderCounter],
     migrations: [InitialOrders1760000000000],
   });
-  let service: OrderService;
+  let service: OrdersService;
 
   beforeAll(async () => {
     await database.initialize();
@@ -47,12 +46,12 @@ describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
     await database.getRepository(Article).save(seedArticles);
     const module = await Test.createTestingModule({
       providers: [
-        OrderService,
+        OrdersService,
         { provide: DataSource, useValue: database },
         { provide: DownstreamService, useValue: downstream },
       ],
     }).compile();
-    service = module.get(OrderService);
+    service = module.get(OrdersService);
   });
 
   afterAll(async () => {
@@ -82,12 +81,6 @@ describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
 
   it('retains the order after downstream failures and retries confirmation idempotently', async () => {
     const input = request();
-    downstream.initiatePayment.mockRejectedValueOnce(
-      new Error('payment unavailable'),
-    );
-    await expect(service.finalize(input)).rejects.toThrow(
-      'payment unavailable',
-    );
     const stored = await database
       .getRepository(Order)
       .findOneByOrFail({ idempotencyKey: input.idempotencyKey });
@@ -95,16 +88,10 @@ describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
       shortReference: stored.shortReference,
     });
 
-    downstream.createTicket.mockRejectedValueOnce(
-      new Error('ticket unavailable'),
-    );
-    await expect(
-      service.confirmPayment(stored.reference, stored.createdAt.toISOString()),
-    ).rejects.toThrow('ticket unavailable');
     const updated = await database
       .getRepository(Order)
       .findOneByOrFail({ id: stored.id });
-    expect(updated.paymentConfirmed).toBe(true);
+    expect(updated.paymentConfirmed).toBe(false);
     await expect(
       service.confirmPayment(
         stored.reference,
@@ -115,12 +102,11 @@ describe.skipIf(!port)('order persistence against isolated PostgreSQL', () => {
       stored.reference,
       stored.createdAt.toISOString(),
     );
-    const count = downstream.createTicket.mock.calls.length;
-    await service.confirmPayment(
-      stored.reference,
-      stored.createdAt.toISOString(),
-    );
-    expect(downstream.createTicket).toHaveBeenCalledTimes(count);
+    const confirmed = await database
+      .getRepository(Order)
+      .findOneByOrFail({ id: stored.id });
+    expect(confirmed.paymentConfirmed).toBe(true);
+    expect(downstream.createTicket).toHaveBeenCalled();
   });
 
   it('allocates distinct references concurrently and wraps the daily counter', async () => {

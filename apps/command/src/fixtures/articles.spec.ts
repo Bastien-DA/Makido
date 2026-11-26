@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { validateArticleCustomizations } from '../article-customizations.js';
+import { validateArticleCustomizations } from '../features/articles/domain/article-customizations.js';
 import { seedArticles } from './articles.js';
 
 describe('article fixtures', () => {

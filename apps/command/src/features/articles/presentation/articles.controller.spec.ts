@@ -1,22 +1,20 @@
 import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
 
-import { CommandController } from './command.controller.js';
-import { CommandService } from './command.service.js';
-import { ArticleCategory } from './entities/article.entity.js';
-import { OrderService } from './order.service.js';
+import { ArticlesController } from './articles.controller.js';
+import { ArticlesService } from '../domain/services/articles.service.js';
+import { ArticleCategory } from '../entities/article.entity.js';
 
 describe('article listing RPCs', () => {
   it('passes the availability and category filters to the service', async () => {
     const findArticles = vi.fn().mockResolvedValue([]);
     const module = await Test.createTestingModule({
-      controllers: [CommandController],
+      controllers: [ArticlesController],
       providers: [
-        { provide: CommandService, useValue: { findArticles } },
-        { provide: OrderService, useValue: {} },
+        { provide: ArticlesService, useValue: { findArticles } },
       ],
     }).compile();
-    const controller = module.get(CommandController);
+    const controller = module.get(ArticlesController);
 
     expect(await controller.getArticles()).toEqual({ articles: [] });
     expect(

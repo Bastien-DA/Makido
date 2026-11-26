@@ -1,6 +1,6 @@
-import type { ArticleCustomizationGroup } from '../entities/article.entity.js';
+import type { ArticleCustomizationGroup } from '../features/articles/entities/article.entity.js';
 
-import { type Article, ArticleCategory } from '../entities/article.entity.js';
+import { type Article, ArticleCategory } from '../features/articles/entities/article.entity.js';
 
 const burgerExtra: ArticleCustomizationGroup = {
   id: 'garniture',

@@ -4,10 +4,10 @@ import { rpcError } from '@makido/contracts/grpc';
 import type {
   Article,
   ArticleCustomizationOption,
-} from './entities/article.entity.js';
-import type { OrderLine } from './entities/order.entity.js';
+} from '../../articles/entities/article.entity.js';
+import type { OrderLine } from '../entities/order.entity.js';
 
-import { isRecord } from './common/validation.js';
+import { isRecord } from '../../../core/common/validation.js';
 
 export interface SelectedOption {
   groupId: string;
@@ -43,7 +43,7 @@ export function priceLine(
   line: RequestedLine,
 ): { totalCents: number; snapshot: OrderLine } {
   if (!Number.isSafeInteger(line.quantity) || line.quantity < 1) {
-    throw rpcError(status.INVALID_ARGUMENT, 'Quantité d’article invalide.');
+    throw rpcError(status.INVALID_ARGUMENT, "Quantité d'article invalide.");
   }
   if (!article.isAvailable || article.ingredients.length === 0) {
     throw rpcError(
@@ -70,7 +70,7 @@ export function priceLine(
       typeof selection.groupId !== 'string' ||
       typeof selection.optionId !== 'string'
     ) {
-      throw rpcError(status.INVALID_ARGUMENT, 'Personnalisation invalide.');
+      throw rpcError(status.INVALID_ARGUMENT, "Personnalisation invalide.");
     }
     const group = article.customizations.find(
       (item) => item.id === selection.groupId,
@@ -80,7 +80,7 @@ export function priceLine(
     );
     const key = JSON.stringify([selection.groupId, selection.optionId]);
     if (!group || !option || selected.has(key)) {
-      throw rpcError(status.INVALID_ARGUMENT, 'Option inconnue ou dupliquée.');
+      throw rpcError(status.INVALID_ARGUMENT, "Option inconnue ou dupliquée.");
     }
     if (
       !Number.isSafeInteger(selection.quantity) ||
@@ -91,7 +91,7 @@ export function priceLine(
     ) {
       throw rpcError(
         status.INVALID_ARGUMENT,
-        'Quantité de personnalisation invalide.',
+        "Quantité de personnalisation invalide.",
       );
     }
     selected.set(key, { selection, option, groupName: group.name });
@@ -113,7 +113,7 @@ export function priceLine(
     ) {
       throw rpcError(
         status.INVALID_ARGUMENT,
-        'Quantité de personnalisation trop élevée.',
+        "Quantité de personnalisation trop élevée.",
       );
     }
   }
@@ -176,7 +176,7 @@ function validateCompatibility(
       if (
         selected.has(JSON.stringify([reference.groupId, reference.optionId]))
       ) {
-        throw rpcError(status.INVALID_ARGUMENT, 'Options incompatibles.');
+        throw rpcError(status.INVALID_ARGUMENT, "Options incompatibles.");
       }
     }
   }
