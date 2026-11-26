@@ -4,12 +4,9 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { config } from './config.js';
 
-async function bootstrap() {
-  const app = await NestFactory.createMicroservice(
-    AppModule,
-    grpcOptions('payment', config.grpcUrl),
-  );
-  app.enableShutdownHooks();
-  await app.listen();
-}
-await bootstrap();
+const app = await NestFactory.create(AppModule, { rawBody: true });
+app.connectMicroservice(grpcOptions('payment', config.grpcUrl));
+app.enableShutdownHooks();
+
+await app.startAllMicroservices();
+await app.listen(config.httpPort);

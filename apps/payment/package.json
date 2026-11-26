@@ -22,7 +22,7 @@
     "@nestjs/core": "12.2.0",
     "@nestjs/microservices": "12.2.0",
     "@nestjs/mongoose": "12.0.1",
-    "@stripe/cli": "1.55.14",
+    "@nestjs/platform-express": "12.2.0",
     "mongoose": "9.12.3",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",

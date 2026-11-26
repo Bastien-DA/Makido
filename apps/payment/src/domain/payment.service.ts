@@ -7,6 +7,7 @@ import {
   PaymentConflictError,
   ProviderUnavailableError,
 } from './payment.errors.js';
+import { PaymentNotifier } from './ports/payment-notifier.js';
 import { PaymentProvider } from './ports/payment-provider.js';
 import { PaymentRepository } from './ports/payment.repository.js';
 
@@ -14,14 +15,9 @@ const DEFAULT_CURRENCY = 'eur';
 
 export interface CreatedPayment {
   payment: Payment;
-  /** The provider's page where the customer pays */
   redirectUrl: string;
 }
 
-/**
- * Business rules of a payment. Knows the two ports (storage, provider) but
- * neither Mongo nor Stripe nor gRPC
- */
 @Injectable()
 export class PaymentService {
   private readonly logger = new Logger(PaymentService.name);
@@ -29,12 +25,10 @@ export class PaymentService {
   constructor(
     private readonly payments: PaymentRepository,
     private readonly provider: PaymentProvider,
+    private readonly notifier: PaymentNotifier,
   ) {}
 
-  /**
-   * Has an order paid. Asked twice for the same order (kiosk reloaded…), it
-   * returns the payment already open instead of charging twice
-   */
+
   async createPayment(request: NewPayment): Promise<CreatedPayment> {
     const data = validate(request);
 
@@ -45,6 +39,34 @@ export class PaymentService {
     }
 
     return this.initiate(await this.payments.create(data));
+  }
+
+  /**
+   * The provider's signed callback: the only source of truth on the result.
+   * Throws InvalidCallbackError when not signed by the provider. Receiving
+   * the same callback twice changes nothing and notifies only once
+   */
+  async handleCallback(payload: Buffer, signature: string): Promise<void> {
+    const outcome = this.provider.parseCallback(payload, signature);
+    if (!outcome) return;
+
+    const payment = await this.payments.finalize(
+      outcome.paymentId,
+      outcome.status,
+    );
+    if (!payment) {
+      this.logger.log(
+        `Callback for payment ${outcome.paymentId} ignored: unknown or already final`,
+      );
+
+      return;
+    }
+
+    void this.notifier.paymentSettled(payment).catch((error: unknown) => {
+      this.logger.error(
+        `Payment ${payment.id} settled but not notified: ${message(error)}`,
+      );
+    });
   }
 
   /** Saved first, then sent to the provider: a provider failure leaves a trace */
@@ -126,7 +148,6 @@ function validate({ amount, currency, orderId }: NewPayment): NewPayment {
     throw new InvalidPaymentError('amount must be a positive number of cents');
   }
 
-  // Empty is the proto default: the service default applies
   const cleanCurrency = currency.trim().toLowerCase() || DEFAULT_CURRENCY;
   if (!/^[a-z]{3}$/.test(cleanCurrency)) {
     throw new InvalidPaymentError('currency must be an ISO 4217 code');
