@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package payment;
+
+// Called by the gateway (or another service) to have an order paid
+service PaymentService {
+  rpc CreatePayment (CreatePaymentRequest) returns (CreatePaymentResponse);
+}
+
+enum PaymentStatus {
+  // Mandatory first value in proto3, never set by the service
+  PAYMENT_STATUS_UNSPECIFIED = 0;
+  // Created, payment initiated at the provider, waiting for its callback
+  PENDING = 1;
+  // Final: the provider confirmed the payment
+  SUCCEEDED = 2;
+  // Final: refused, canceled or the provider could not be reached
+  FAILED = 3;
+}
+
+message CreatePaymentRequest {
+  string order_id = 1;
+  // In cents, never decimals for money: 12.50 EUR is 1250
+  int32 amount = 2;
+  // ISO 4217 code in lowercase ("eur"), the service default when empty
+  string currency = 3;
+}
+
+message Payment {
+  string id = 1;
+  string order_id = 2;
+  int32 amount = 3;
+  string currency = 4;
+  PaymentStatus status = 5;
+  // The payment id at the provider (a Stripe Checkout Session id)
+  string external_id = 6;
+  string created_at = 7;
+  string updated_at = 8;
+}
+
+message CreatePaymentResponse {
+  Payment payment = 1;
+  // The provider's hosted payment page (Stripe Checkout): the kiosk sends the
+  // customer there. Returned only here, never stored
+  string redirect_url = 2;
+}
